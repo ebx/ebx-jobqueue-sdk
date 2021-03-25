@@ -1,0 +1,60 @@
+version: 0.2
+
+env:
+  variables:
+    DEV_BRANCH: dev
+    RELEASE_BRANCH: master
+    REPO: ebx/ebx-jobqueue-sdk
+    BASE_BUILD_EMAIL_RECIPIENT: backend-deployments-group@echobox.com
+    TEST_CONTAINER_TAG: ''
+    TEST_CONTAINER_CHART: ''
+    BUILD_SCRIPTS_DIR: Infrastructure/Build-Scripts
+    BUILD_DOCKER_DIR: Infrastructure/Build-Docker
+    BUILD_HELM_DIR: Infrastructure/Build-Helm
+    INFRASTRUCTURE_CDK_DIR: Infrastructure/Build-Infrastructure
+    HELM_REPO_S3_BUCKET: echobox-helm-charts
+    HELM_REPO_NAME: echobox
+  parameter-store:
+    BUILD_EMAIL: '/Prod/Internal/Build-Email'
+  secrets-manager:
+    GITHUB_TOKEN: '/Prod/External/Github/APIToken-SupportAtEchoboxCom'
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+    commands:
+      - # start dockerd
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
+
+  pre_build:
+   commands:
+      - ## Confirm build versions
+      - docker --version
+      - java -version
+      - ## BOOTSTRAP Script - must run first !!
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
+      - ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
+      - ##Set execute permissions
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/detect_and_stop_duplicate_builds.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/validate_pr_details.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/validate_microservice_documentation.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/create_chart_version.sh
+      - # Stop any duplicate builds
+      - ${BUILD_SCRIPTS_DIR}/detect_and_stop_duplicate_builds.sh
+      - ${BUILD_SCRIPTS_DIR}/validate_pr_details.sh
+      - ${BUILD_SCRIPTS_DIR}/validate_microservice_documentation.sh
+
+  build:
+   commands:
+      - # containerise build if TEST_CONTAINER_TAG is set
+      - |-
+          if [ "$TEST_CONTAINER_TAG" != "" ]; then
+            ${BUILD_SCRIPTS_DIR}/containerise_build.sh
+            ${BUILD_SCRIPTS_DIR}/create_chart_version.sh "TRUE" "FALSE" "${TEST_CONTAINER_CHART}"
+          fi
+
+cache:
+  paths:
+    - '/root/.m2/**/*'

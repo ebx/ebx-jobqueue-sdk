@@ -1,0 +1,23 @@
+{
+    "app": "npx ts-node bin/wrapper.ts",
+    "context": {
+      "owner": "ebx",
+      "repo": "ebx-jobqueue-sdk",
+      "service_name": "JobQueue-SDK",
+      "git_token_secret_arn": "arn:aws:secretsmanager:eu-west-1:558091818291:secret:/Prod/External/Github/APIToken-SupportAtEchoboxCom-c8ogh8",
+      "git_connection_arn": "arn:aws:codestar-connections:eu-west-1:558091818291:connection/69eb2e29-56cd-41ff-b927-72f63007084d",
+      "build_instance_size": "SMALL",
+      "account_ref": "558091818291",
+      "codebuild_vpc": "vpc-66cd2503",
+      "codebuild_az": "eu-west-1a",
+      "codebuild_private_subnet": "subnet-026ca4e9fe6cbfd98",
+      "codebuild_timeout_mins": "30",
+      "create_webhook": "true",
+      "release_pipeline_branch_names": "dev,master",
+      "aws_region": "eu-west-1",
+      "build_container": "false",
+      "notification_email": "backend-deployments-group@echobox.com",
+      "buildscripts_s3_bucket": "echobox-buildscripts",
+      "helm_charts_s3_bucket": "echobox-helm-charts"
+      }
+}

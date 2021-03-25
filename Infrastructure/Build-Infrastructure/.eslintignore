@@ -1,0 +1,4 @@
+# ignore any derived files.  These are not modified by user
+**/lib/*.d.ts
+**/bin/*.d.ts
+**/node_modules

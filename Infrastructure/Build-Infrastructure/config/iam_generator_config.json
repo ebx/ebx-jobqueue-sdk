@@ -1,0 +1,10 @@
+{
+    "policies": [     
+        {
+            "policy_name": "Echobox-PipelinePolicy-JobQueue-SDK",
+            "description": "Additional pipeline policy for service JobQueue-SDK",
+            "policy_file": "pipeline_policy.json"
+        }
+    ],
+    "roles": []
+}

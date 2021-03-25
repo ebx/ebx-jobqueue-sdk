@@ -1,0 +1,30 @@
+{
+  "name": "codebuild",
+  "version": "0.1.0",
+  "bin": {
+    "codebuild": "bin/codebuild.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "pre_deploy": "bash ./scripts/pre_deploy.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^8.10.61",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-codebuild": "1.51.0",
+    "@aws-cdk/aws-iam": "1.51.0",
+    "@aws-cdk/aws-logs": "1.51.0",
+    "@aws-cdk/aws-s3": "1.51.0",
+    "@aws-cdk/aws-sns": "1.51.0",
+    "@aws-cdk/aws-sqs": "1.51.0",
+    "@aws-cdk/aws-ssm": "1.51.0",
+    "@aws-cdk/core": "1.51.0",
+    "lodash": "4.17.15",
+    "source-map-support": "0.5.9"
+  }
+}
