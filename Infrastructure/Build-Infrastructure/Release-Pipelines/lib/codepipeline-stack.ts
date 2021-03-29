@@ -466,6 +466,14 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
       BUILD_EMAIL_ARN
     );
 
+    const ECHOBOX_EMAIL_ARN = `arn:aws:ses:eu-west-1:558091818291:identity/*echobox.com`;
+    ReleasePipelineNestedStack.attachEchoboxSendEmailPolicy(
+      this,
+      buildRole,
+      serviceNameTag,
+      ECHOBOX_EMAIL_ARN
+    );
+
     // tag the pipeline
     ServiceBillingTags.setEnvironment(codeBuildProject, ENVIRONMENT_TAG);
     ServiceBillingTags.setServiceType(codeBuildProject, SERVICE_TYPE_TAG);
@@ -830,6 +838,20 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
     const policy = new Policy(construct, `${serviceNameTag}-BuildEmail`, {});
     policyStatement.addActions("ssm:GetParameters");
     policyStatement.addResources(buildEmailArn);
+    policy.addStatements(policyStatement);
+    buildRole.attachInlinePolicy(policy);
+  }
+
+  public static attachEchoboxSendEmailPolicy(
+    construct: Construct,
+    buildRole: Role,
+    serviceNameTag: string,
+    sesIdentityArn: string
+  ): void {
+    const policy = new Policy(construct, `${serviceNameTag}-EchoboxEmail`, {});
+    const policyStatement = new PolicyStatement();
+    policyStatement.addActions("ses:SendEmail");
+    policyStatement.addResources(sesIdentityArn);
     policy.addStatements(policyStatement);
     buildRole.attachInlinePolicy(policy);
   }
