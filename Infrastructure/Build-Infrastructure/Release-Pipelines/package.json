@@ -1,0 +1,33 @@
+{
+  "name": "codepipeline",
+  "version": "0.1.0",
+  "bin": {
+    "codepipeline": "bin/codepipeline.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "pre_deploy": "bash ./scripts/pre_deploy.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^8.10.61",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@aws-cdk/core": "1.51.0",
+    "@aws-cdk/aws-codepipeline": "1.51.0",
+    "@aws-cdk/aws-codepipeline-actions": "1.51.0",
+    "@aws-cdk/aws-codebuild": "1.51.0",
+    "@aws-cdk/aws-ec2": "1.51.0",
+    "@aws-cdk/aws-iam": "1.51.0",
+    "@aws-cdk/aws-secretsmanager": "1.51.0",
+    "@aws-cdk/aws-logs": "1.51.0",
+    "@aws-cdk/aws-ssm": "1.51.0",
+    "@aws-cdk/aws-lambda": "1.51.0",
+    "@aws-cdk/aws-s3": "1.51.0",
+    "source-map-support": "^0.5.9",
+    "cdk-iam-generator": "1.0.4"
+  }
+}

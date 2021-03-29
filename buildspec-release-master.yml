@@ -1,0 +1,51 @@
+version: 0.2
+
+env:
+  variables:
+    DEV_BRANCH: dev
+    RELEASE_BRANCH: master
+    REPO: ebx/ebx-jobqueue-sdk
+    BASE_BUILD_EMAIL_RECIPIENT: backend-deployments-group@echobox.com
+    HELM_NAMESPACE: production
+    BUILD_SCRIPTS_DIR: Infrastructure/Build-Scripts
+    BUILD_DOCKER_DIR: Infrastructure/Build-Docker
+    BUILD_HELM_DIR: Infrastructure/Build-Helm
+    INFRASTRUCTURE_CDK_DIR: Infrastructure/Build-Infrastructure
+    HELM_REPO_S3_BUCKET: echobox-helm-charts
+    HELM_REPO_NAME: echobox
+  parameter-store:
+    BUILD_EMAIL: '/Prod/Internal/Build-Email'
+    EKS_CLUSTER_NAME: '/Infrastructure/EKS/ClusterName'
+  secrets-manager:
+    GITHUB_TOKEN: '/Prod/External/Github/APIToken-SupportAtEchoboxCom'
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+    commands:
+      - apt-get update
+      - apt install -y dos2unix
+
+  pre_build:
+   commands:
+      - ## BOOTSTRAP Script - must run first !!
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
+      - ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
+      - ## Set some further permissions
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/build_helm_package_notes.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/get_current_git_branch.sh
+
+  build:
+   commands:
+      - ## get the current branch based upon the pipeline settings
+      - CURRENT_BRANCH=$(sh ${BUILD_SCRIPTS_DIR}/get_current_git_branch.sh)
+      - # output test message
+      - echo "Running pipeline for REPO - ${REPO}, BRANCH - ${CURRENT_BRANCH}"
+
+  post_build:
+    commands:
+      - ## will send email if codebuild was triggered from pipeline and codebuild was successful
+      - ${BUILD_SCRIPTS_DIR}/build_helm_package_notes.sh
+      - ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
