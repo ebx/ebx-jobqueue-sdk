@@ -10,6 +10,7 @@ const OWNER = app.node.tryGetContext("owner");
 const REPO = app.node.tryGetContext("repo");
 const GIT_TOKEN_SECRET_ARN = app.node.tryGetContext("git_token_secret_arn");
 const GIT_CONNECTION_ARN = app.node.tryGetContext("git_connection_arn");
+const ARCHIVA_CREDENTIALS_ARN = app.node.tryGetContext("archiva_credentials_arn");
 const SERVICE_NAME = app.node.tryGetContext("service_name");
 const ACCOUNT_REF = app.node.tryGetContext("account_ref");
 const CODEBUILD_VPC = app.node.tryGetContext("codebuild_vpc");
@@ -31,6 +32,7 @@ const propertiesObject = {
   repo: REPO,
   git_token_secret_arn: GIT_TOKEN_SECRET_ARN,
   git_connection_arn: GIT_CONNECTION_ARN,
+  archiva_credentials_arn: ARCHIVA_CREDENTIALS_ARN,
   service_name: SERVICE_NAME,
   account_ref: ACCOUNT_REF,
   codebuild_vpc: CODEBUILD_VPC,

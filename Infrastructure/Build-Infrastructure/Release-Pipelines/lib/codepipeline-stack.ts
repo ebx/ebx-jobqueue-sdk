@@ -41,6 +41,7 @@ interface MultiStackProps extends cdk.StackProps {
   service_name?: string;
   git_token_secret_arn?: string;
   git_connection_arn?: string;
+  archiva_credentials_arn?: string;
   account_ref?: string;
   codebuild_vpc?: string;
   codebuild_az?: string;
@@ -88,6 +89,11 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
     let githubConnectionArn = "";
     if (props && props.git_connection_arn) {
       githubConnectionArn = props.git_connection_arn;
+    }
+
+    let archivaCredentialsArn = "";
+    if (props && props.archiva_credentials_arn) {
+      archivaCredentialsArn = props.archiva_credentials_arn;
     }
 
     let accountRef = "";
@@ -168,6 +174,7 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
         owner,
         gitTokenSecretArn,
         githubConnectionArn,
+        archivaCredentialsArn,
         branches[i],
         buildInstanceSize,
         isPrivileged,
@@ -191,6 +198,7 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
     owner: string,
     gitTokenSecretArn: string,
     githubConnectionArn: string,
+    archivaCredentialsArn: string,
     branch: string,
     buildInstanceSize: string,
     isPrivileged: boolean,
@@ -472,6 +480,14 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
       buildRole,
       serviceNameTag,
       ECHOBOX_EMAIL_ARN
+    );
+
+    const ARCHIVA_CREDENTIALS_ARN = archivaCredentialsArn;
+    ReleasePipelineNestedStack.attachArchivaCredentialsSecretPolicy(
+      this,
+      buildRole,
+      serviceNameTag,
+      ARCHIVA_CREDENTIALS_ARN
     );
 
     // tag the pipeline
@@ -852,6 +868,20 @@ export class ReleasePipelineNestedStack extends cdk.NestedStack {
     const policyStatement = new PolicyStatement();
     policyStatement.addActions("ses:SendEmail");
     policyStatement.addResources(sesIdentityArn);
+    policy.addStatements(policyStatement);
+    buildRole.attachInlinePolicy(policy);
+  }
+
+  public static attachArchivaCredentialsSecretPolicy(
+    construct: Construct,
+    buildRole: Role,
+    serviceNameTag: string,
+    archivaCredSecretArn: string
+  ): void {
+    const policy = new Policy(construct, `${serviceNameTag}-ArcivaCredentials`, {});
+    const policyStatement = new PolicyStatement();
+    policyStatement.addActions("secretsmanager:GetSecretValue");
+    policyStatement.addResources(archivaCredSecretArn);
     policy.addStatements(policyStatement);
     buildRole.attachInlinePolicy(policy);
   }
