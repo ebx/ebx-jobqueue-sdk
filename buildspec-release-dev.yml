@@ -10,13 +10,11 @@ env:
     BUILD_DOCKER_DIR: Infrastructure/Build-Docker
     BUILD_HELM_DIR: Infrastructure/Build-Helm
     INFRASTRUCTURE_CDK_DIR: Infrastructure/Build-Infrastructure
-    HELM_REPO_S3_BUCKET: echobox-helm-charts
-    HELM_REPO_NAME: echobox
   parameter-store:
-    BUILD_EMAIL: '/Prod/Internal/Build-Email'
     README_TOKEN: '/Prod/External/Readme.io/APIToken'
   secrets-manager:
     GITHUB_TOKEN: '/Prod/External/Github/APIToken-SupportAtEchoboxCom'
+    ARCHIVA_REPO_CREDS: '/Prod/External/Archiva/RepoCredentials'
 
 phases:
   install:
@@ -35,24 +33,26 @@ phases:
       - ## Confirm build versions
       - docker --version
       - java -version
-      - ## BOOTSTRAP Script - must run first !!
+      - ## BOOTSTRAP Script - must run first !
       - chmod a+x ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
       - ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
- 
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/archiva_version_check_and_deploy.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
+
   build:
     commands:
       - ## get the current branch based upon the pipeline settings
       - CURRENT_BRANCH=$(sh ${BUILD_SCRIPTS_DIR}/get_current_git_branch.sh)
       - # output test message
       - echo "Running pipeline for REPO - ${REPO}, BRANCH - ${CURRENT_BRANCH}"
+      - # parameter indicates if in test mode. If not then will deploy to Archiva
+      - # In dev pipeline will build and determine if version exists but will not deploy
+      - ${BUILD_SCRIPTS_DIR}/archiva_version_check_and_deploy.sh "TRUE"
 
   post_build:
     commands:
       - ## will send email if codebuild was triggered from pipeline and codebuild was successful
-      - ## first create the helm report - and include that in the email
-      - ${BUILD_SCRIPTS_DIR}/build_helm_package_notes.sh
       - ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
-
 cache:
   paths:
     - '/root/.m2/**/*'

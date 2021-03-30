@@ -1,0 +1,3 @@
+## List of paths to artifact to deploy to Archiva
+## if in root then just '.'
+JobQueue

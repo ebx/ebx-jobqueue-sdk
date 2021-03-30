@@ -12,10 +12,6 @@ env:
     BUILD_DOCKER_DIR: Infrastructure/Build-Docker
     BUILD_HELM_DIR: Infrastructure/Build-Helm
     INFRASTRUCTURE_CDK_DIR: Infrastructure/Build-Infrastructure
-    HELM_REPO_S3_BUCKET: echobox-helm-charts
-    HELM_REPO_NAME: echobox
-  parameter-store:
-    BUILD_EMAIL: '/Prod/Internal/Build-Email'
   secrets-manager:
     GITHUB_TOKEN: '/Prod/External/Github/APIToken-SupportAtEchoboxCom'
 
@@ -29,6 +25,12 @@ phases:
 
   pre_build:
    commands:
+      - ## install python3 to allow build_docs.py to run
+      - apt-get update
+      - apt install -y python3-pip
+      - pip install --upgrade pip
+      - pip --version
+      - apt install -y dos2unix
       - ## Confirm build versions
       - docker --version
       - java -version
@@ -37,23 +39,19 @@ phases:
       - ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
       - ##Set execute permissions
       - chmod a+x ${BUILD_SCRIPTS_DIR}/detect_and_stop_duplicate_builds.sh
-      - chmod a+x ${BUILD_SCRIPTS_DIR}/validate_pr_details.sh
-      - chmod a+x ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
       - chmod a+x ${BUILD_SCRIPTS_DIR}/validate_microservice_documentation.sh
-      - chmod a+x ${BUILD_SCRIPTS_DIR}/create_chart_version.sh
-      - # Stop any duplicate builds
-      - ${BUILD_SCRIPTS_DIR}/detect_and_stop_duplicate_builds.sh
-      - ${BUILD_SCRIPTS_DIR}/validate_pr_details.sh
-      - ${BUILD_SCRIPTS_DIR}/validate_microservice_documentation.sh
 
   build:
    commands:
       - # containerise build if TEST_CONTAINER_TAG is set
-      - |-
-          if [ "$TEST_CONTAINER_TAG" != "" ]; then
-            ${BUILD_SCRIPTS_DIR}/containerise_build.sh
-            ${BUILD_SCRIPTS_DIR}/create_chart_version.sh "TRUE" "FALSE" "${TEST_CONTAINER_CHART}"
-          fi
+      - # Stop any duplicate builds
+      - ${BUILD_SCRIPTS_DIR}/detect_and_stop_duplicate_builds.sh
+      - # remove validate_pr_details.sh for now as no pom.xml in root
+      - # ${BUILD_SCRIPTS_DIR}/validate_pr_details.sh
+      - ${BUILD_SCRIPTS_DIR}/validate_microservice_documentation.sh
+      - ## just build and test
+      - cd "${CODEBUILD_SRC_DIR}/JobQueue"
+      - mvn -am clean package -Dcheckstyle.skip=false -Dmaven.test.skip=false
 
 cache:
   paths:

@@ -11,13 +11,9 @@ env:
     BUILD_DOCKER_DIR: Infrastructure/Build-Docker
     BUILD_HELM_DIR: Infrastructure/Build-Helm
     INFRASTRUCTURE_CDK_DIR: Infrastructure/Build-Infrastructure
-    HELM_REPO_S3_BUCKET: echobox-helm-charts
-    HELM_REPO_NAME: echobox
-  parameter-store:
-    BUILD_EMAIL: '/Prod/Internal/Build-Email'
-    EKS_CLUSTER_NAME: '/Infrastructure/EKS/ClusterName'
   secrets-manager:
     GITHUB_TOKEN: '/Prod/External/Github/APIToken-SupportAtEchoboxCom'
+    ARCHIVA_REPO_CREDS: '/Prod/External/Archiva/RepoCredentials'
 
 phases:
   install:
@@ -33,9 +29,9 @@ phases:
       - chmod a+x ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
       - ${BUILD_SCRIPTS_DIR}/get_latest_buildscripts.sh
       - ## Set some further permissions
-      - chmod a+x ${BUILD_SCRIPTS_DIR}/build_helm_package_notes.sh
       - chmod a+x ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
       - chmod a+x ${BUILD_SCRIPTS_DIR}/get_current_git_branch.sh
+      - chmod a+x ${BUILD_SCRIPTS_DIR}/archiva_version_check_and_deploy.sh
 
   build:
    commands:
@@ -43,9 +39,10 @@ phases:
       - CURRENT_BRANCH=$(sh ${BUILD_SCRIPTS_DIR}/get_current_git_branch.sh)
       - # output test message
       - echo "Running pipeline for REPO - ${REPO}, BRANCH - ${CURRENT_BRANCH}"
+      - # parameter indicates if in test mode. If not then will deploy to archiva
+      - ${BUILD_SCRIPTS_DIR}/archiva_version_check_and_deploy.sh "FALSE"
 
   post_build:
     commands:
       - ## will send email if codebuild was triggered from pipeline and codebuild was successful
-      - ${BUILD_SCRIPTS_DIR}/build_helm_package_notes.sh
       - ${BUILD_SCRIPTS_DIR}/send_email_notification.sh
