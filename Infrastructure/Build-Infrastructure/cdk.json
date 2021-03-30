@@ -6,6 +6,7 @@
       "service_name": "JobQueue-SDK",
       "git_token_secret_arn": "arn:aws:secretsmanager:eu-west-1:558091818291:secret:/Prod/External/Github/APIToken-SupportAtEchoboxCom-c8ogh8",
       "git_connection_arn": "arn:aws:codestar-connections:eu-west-1:558091818291:connection/69eb2e29-56cd-41ff-b927-72f63007084d",
+      "archiva_credentials_arn": "arn:aws:secretsmanager:eu-west-1:558091818291:secret:/Prod/External/Archiva/RepoCredentials-OlgZvk",
       "build_instance_size": "SMALL",
       "account_ref": "558091818291",
       "codebuild_vpc": "vpc-66cd2503",
