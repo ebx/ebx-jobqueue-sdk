@@ -13,15 +13,6 @@
     <artifactId>ebx-jobqueue-sdk</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <maven.deploy.skip>false</maven.deploy.skip>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -122,6 +113,13 @@
         </profile>
     </profiles>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <dependency>
           <groupId>com.echobox</groupId>
@@ -175,18 +173,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <distributionManagement>
-      <repository>
-        <id>archiva.internal</id>
-        <name>Internal Release Repository</name>
-        <url>http://repo.ebx.sh/repository/internal/</url>
-      </repository>
-      <snapshotRepository>
-        <id>archiva.snapshots</id>
-        <name>Internal Snapshot Repository</name>
-        <url>http://repo.ebx.sh/repository/snapshots/</url>
-      </snapshotRepository>
-    </distributionManagement>
 
 </project>
