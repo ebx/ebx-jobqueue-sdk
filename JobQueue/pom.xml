@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.echobox</groupId>
         <artifactId>ebx-jobqueue-sdk-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
     </parent>
 
     <groupId>com.echobox</groupId>
