@@ -36,8 +36,9 @@ import org.mongodb.morphia.annotations.Transient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -596,24 +597,28 @@ public abstract class JobCommand<C extends JobCommandExecutionContext<C, ?, ?>>
         }
       }
 
-      for (Field field : this.getClass().getDeclaredFields()) {
-
-        Class<?> type = field.getType();
-        Object value = null;
-        try {
-          field.setAccessible(true);
-          value = field.get(this);
-        } catch (IllegalAccessException e) {
-          logger.warn("Unable to access field", e);
-        }
-
-        if (value != null && loggingKeysByType.keySet().contains(type)) {
-
-          String fieldName = loggingKeysByType.get(type);
-          fieldName = fieldName == null ? field.getName() : fieldName;
-          loggingInfoMap.put(fieldName, value);
-        }
-      }
+      Arrays.stream(this.getClass().getDeclaredFields())
+          .filter(field -> {
+            final int modifiers = field.getModifiers();
+            return !(Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers));
+          })
+          .forEach(field -> {
+            Class<?> type = field.getType();
+            Object value = null;
+            try {
+              field.setAccessible(true);
+              value = field.get(this);
+            } catch (IllegalAccessException e) {
+              logger.warn("Unable to access field", e);
+            }
+  
+            if (value != null && loggingKeysByType.keySet().contains(type)) {
+    
+              String fieldName = loggingKeysByType.get(type);
+              fieldName = fieldName == null ? field.getName() : fieldName;
+              loggingInfoMap.put(fieldName, value);
+            }
+          });
     } catch (Exception e) {
       logger.error("Exception thrown from getLoggingInfoMap method:", e);
     }
