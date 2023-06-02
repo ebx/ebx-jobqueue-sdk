@@ -134,7 +134,7 @@
                     <configuration>
                         <argLine>
                             -Dfile.encoding=UTF-8
-                            -javaagent:${settings.localRepository}/org/jmockit/jmockit/1.43/jmockit-1.43.jar
+                            -javaagent:${settings.localRepository}/org/jmockit/jmockit/1.38/jmockit-1.38.jar
                         </argLine>
                         <excludes>
                             <exclude>**/*IT.java</exclude>
