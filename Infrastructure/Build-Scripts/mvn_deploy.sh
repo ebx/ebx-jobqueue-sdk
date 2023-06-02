@@ -53,5 +53,5 @@ else
   echo "${GPG_OWNERTRUST}" | base64 --decode | $GPG_EXECUTABLE --import-ownertrust --batch --passphrase "${GPG_PASSPHRASE}" || echo "Failed to import GPG_OWNERTRUST."
 
   # Deploy to maven central
-  mvn clean deploy --settings .maven.xml -B -U -Prelease
+  mvn clean deploy --settings .maven.xml -B -U -P ossrh
 fi
