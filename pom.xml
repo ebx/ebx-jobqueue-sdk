@@ -131,6 +131,16 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.version}</version>
+                    <configuration>
+                        <argLine>
+                            -Dfile.encoding=UTF-8
+                            -javaagent:${settings.localRepository}/org/jmockit/jmockit/1.38/jmockit-1.38.jar
+                        </argLine>
+                        <excludes>
+                            <exclude>**/*IT.java</exclude>
+                            <exclude>**/*ITest.java</exclude>
+                        </excludes>
+                    </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>org.apache.maven.surefire</groupId>
@@ -149,21 +159,51 @@
                         <target>1.8</target>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                            <configuration>
+                                <!-- This is necessary for gpg to not try to use the pinentry programs -->
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                  </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <distributionManagement>
-      <repository>
-        <id>archiva.internal</id>
-        <name>Internal Release Repository</name>
-        <url>http://repo.ebx.sh/repository/internal/</url>
-      </repository>
-      <snapshotRepository>
-        <id>archiva.snapshots</id>
-        <name>Internal Snapshot Repository</name>
-        <url>http://repo.ebx.sh/repository/snapshots/</url>
-      </snapshotRepository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
 
 </project>
