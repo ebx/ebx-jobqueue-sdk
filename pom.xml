@@ -171,9 +171,8 @@
     </build>
 
     <profiles>
+        <!-- Activate using the release property: mvn clean install -P release -->
         <profile>
-            <!-- Activate using the release property: mvn clean install -P release -->
-            <profile>
             <id>release</id>
             <activation>
                 <property>
