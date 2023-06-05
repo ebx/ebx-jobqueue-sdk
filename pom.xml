@@ -166,6 +166,7 @@
                         <target>1.8</target>
                     </configuration>
                 </plugin>
+                <!-- To release to Maven central -->
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -177,6 +178,7 @@
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
+                <!-- To sign the artifacts -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
@@ -197,7 +199,7 @@
                             </configuration>
                         </execution>
                     </executions>
-                  </plugin>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
