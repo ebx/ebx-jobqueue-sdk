@@ -13,6 +13,13 @@
         <junit.version>5.7.1</junit.version>
     </properties>
 
+    <developers>
+        <developer>
+        <name>Echobox</name>
+        <organizationUrl>http://www.echobox.com</organizationUrl>
+        </developer>
+    </developers>
+
     <modules>
         <module>JobQueue</module>
         <module>JobQueueDemo</module>
