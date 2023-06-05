@@ -13,6 +13,24 @@
     <artifactId>ebx-jobqueue-sdk</artifactId>
     <packaging>jar</packaging>
 
+    <distributionManagement>
+        <snapshotRepository>
+        <id>ossrh</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+        <id>ossrh</id>
+        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <developers>
+        <developer>
+        <name>Echobox</name>
+        <organizationUrl>http://www.echobox.com</organizationUrl>
+        </developer>
+    </developers>
+
     <build>
         <plugins>
             <plugin>
@@ -64,10 +82,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-            </plugin>
-            <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
