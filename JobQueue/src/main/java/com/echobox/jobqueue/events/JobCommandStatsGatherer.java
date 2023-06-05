@@ -70,7 +70,7 @@ public class JobCommandStatsGatherer<J extends Serializable>
   /**
    * Gets the currently collected stats
    *
-   * @return the stats: a map keyed by job type with value being a map of stat -> value pairs 
+   * @return the stats: a map keyed by job type with value being a map of stat-to-value pairs
    * for: count, min, max, median, mean, 95th percentile and 99th percentile.
    */
   public static Map<String, Map<String, Double>> getStats() {

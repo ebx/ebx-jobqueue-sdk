@@ -577,7 +577,7 @@ public abstract class JobCommand<C extends JobCommandExecutionContext<C, ?, ?>>
    * 
    * By default this map contains fields inspected via reflection and the job type enum
    * 
-   * @param loggingKeysByType 
+   * @param loggingKeysByType keys for logging by type
    * @return The logging info map - empty by default.
    */
   public Map<String, Object> getLoggingInfoMap(Map<Class<?>, String> loggingKeysByType) {

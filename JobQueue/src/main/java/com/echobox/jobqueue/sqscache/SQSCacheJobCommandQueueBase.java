@@ -128,7 +128,7 @@ public abstract class SQSCacheJobCommandQueueBase<C
   
   /**
    * Adds the job in the queue 
-   * @param queuedJobId
+   * @param queuedJobId if of the job queue
    */
   protected void addToQueue(QueuedJobId<Q, I> queuedJobId) {
 
