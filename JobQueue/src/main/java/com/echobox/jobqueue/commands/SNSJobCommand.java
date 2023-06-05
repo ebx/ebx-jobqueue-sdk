@@ -100,7 +100,7 @@ public abstract class SNSJobCommand<M extends Serializable,
 
   /**
    * Process the result of sending the message
-   * @param result
+   * @param result publish result
    */
   protected abstract void processResult(PublishResult result);
 
