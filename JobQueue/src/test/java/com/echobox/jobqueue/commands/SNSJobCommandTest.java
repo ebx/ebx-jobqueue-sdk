@@ -21,9 +21,6 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import com.amazonaws.services.sns.AmazonSNSAsync;
-import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
 import com.echobox.jobqueue.status.JobStatus;
 import com.echobox.jobqueue.status.JobSuccess;
 import com.echobox.time.UnixTime;
@@ -32,6 +29,9 @@ import mockit.Expectations;
 import mockit.Mocked;
 import org.junit.Before;
 import org.junit.Test;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 import java.io.Serializable;
 import java.util.concurrent.Future;
@@ -48,7 +48,7 @@ public class SNSJobCommandTest {
   private static final String TOPIC_ARN = "ARN";
 
   @Mocked
-  private AmazonSNSAsync snsClient;
+  private SnsAsyncClient snsClient;
 
   private boolean processResultCalled;
 
@@ -101,7 +101,7 @@ public class SNSJobCommandTest {
       }
 
       @Override
-      protected void processResult(PublishResult result) {
+      protected void processResult(PublishResponse result) {
         processResultCalled = true;
       }
     };
@@ -112,11 +112,11 @@ public class SNSJobCommandTest {
       {
         snsClient.publish((PublishRequest) any);
         result = new Delegate() {
-          PublishResult publish(PublishRequest publishRequest) {
-            assertEquals(TOPIC_ARN, publishRequest.getTopicArn());
-            assertEquals(expectedMessage, publishRequest.getMessage());
+          PublishResponse publish(PublishRequest publishRequest) {
+            assertEquals(TOPIC_ARN, publishRequest.topicArn());
+            assertEquals(expectedMessage, publishRequest.message());
 
-            return new PublishResult();
+            return PublishResponse.builder().build();
           }
         };
       }
