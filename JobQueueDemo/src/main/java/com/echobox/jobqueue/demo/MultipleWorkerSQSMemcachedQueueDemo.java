@@ -17,12 +17,6 @@
 
 package com.echobox.jobqueue.demo;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.echobox.cache.impl.MemcachedCacheService;
 import com.echobox.jobqueue.QueuedJobId;
 import com.echobox.jobqueue.commands.DequeuedJobCommand;
@@ -43,6 +37,11 @@ import org.bson.types.ObjectId;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -60,10 +59,10 @@ import java.util.concurrent.TimeoutException;
  */
 public class MultipleWorkerSQSMemcachedQueueDemo {
 
-  private static Logger logger =
+  private static final Logger logger =
       LoggerFactory.getLogger(MultipleWorkerSQSMemcachedQueueDemo.class);
   
-  private static AmazonSQS sqs;
+  private static SqsClient sqsClient;
   
   private static Map<DemoQueueType, String> queueUrlsByQueueType;
 
@@ -82,9 +81,9 @@ public class MultipleWorkerSQSMemcachedQueueDemo {
          
     // This is the main class you'll need to implement - the persistent queue itself
     // Here we provide a demo SQS-Memcached implementation 
-    
-    DemoJobCommandQueue jobCommandQueue = new DemoSQSMemcachedJobCommandQueueImpl(sqs, 
-          queueUrlsByQueueType);
+  
+    DemoJobCommandQueue jobCommandQueue =
+        new DemoSQSMemcachedJobCommandQueueImpl(sqsClient, queueUrlsByQueueType);
 
     // Create a QueuedJobCommandQueue wrapper around the jobCommandQueue which allows 
     // QueuedJobCommand instances to be submitted for distributed execution
@@ -189,27 +188,28 @@ public class MultipleWorkerSQSMemcachedQueueDemo {
     queueUrlsByQueueType = new HashMap<>();
     queueUrlsByQueueType.put(DemoQueueType.QUEUE_1, queue1Url);
     
-    AWSCredentials credentials = new AWSCredentials() {
+    AwsCredentials credentials = new AwsCredentials() {
 
       @Override
-      public String getAWSAccessKeyId() {
+      public String accessKeyId() {
         return awsAccessKey;
       }
 
       @Override
-      public String getAWSSecretKey() {
+      public String secretAccessKey() {
         return awsSecretKey;
       }
     };
+  
+    AwsCredentialsProvider credentialsProvider =
+        StaticCredentialsProvider.create(credentials);
     
-    AWSCredentialsProvider credentialsProvider =
-        new AWSStaticCredentialsProvider(credentials);
-
-    Regions awsRegion = Regions.valueOf(awsRegionString);
-    
-    sqs = AmazonSQSClientBuilder.standard()
-        .withCredentials(credentialsProvider)
-        .withRegion(awsRegion)
+    Region awsRegion = Region.of(awsRegionString);
+  
+    sqsClient = SqsClient
+        .builder()
+        .credentialsProvider(credentialsProvider)
+        .region(awsRegion)
         .build();
     
   }
