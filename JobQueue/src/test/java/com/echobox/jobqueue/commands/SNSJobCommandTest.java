@@ -17,62 +17,80 @@
 
 package com.echobox.jobqueue.commands;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.echobox.jobqueue.status.JobStatus;
 import com.echobox.jobqueue.status.JobSuccess;
 import com.echobox.time.UnixTime;
-import mockit.Delegate;
-import mockit.Expectations;
-import mockit.Mocked;
+import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import software.amazon.awssdk.services.sns.SnsAsyncClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
  * The type SNS job command test.
  *
- * @author eddspencer
+ * @author JackEllis
  */
+@RunWith(MockitoJUnitRunner.class)
 public class SNSJobCommandTest {
 
   private static final MockJobType JOB_TYPE = new MockJobType("SNS");
   private static final long CREATION_TIME = UnixTime.now();
   private static final String TOPIC_ARN = "ARN";
 
-  @Mocked
+  @Mock
   private SnsAsyncClient snsClient;
+  
+  @Mock
+  private CompletableFuture<PublishResponse> publishResponseCompletableFuture;
 
   private boolean processResultCalled;
-
+  
   @Before
-  public void setupMocks() {
+  public void setupMocks() throws ExecutionException, InterruptedException {
+    when(snsClient.publish(any(PublishRequest.class))).thenReturn(publishResponseCompletableFuture);
+    when(publishResponseCompletableFuture.get()).thenReturn(PublishResponse.builder().build());
     processResultCalled = false;
   }
-
+  
   @Test
   public void doExecutePublishesMessage() throws Exception {
     final SNSJobCommand<Message, MockJobCommandExecutionContext> command =
         createCommand(new Message());
 
-    expectMessage("{\"id\":\"Test\"}");
-
     final Future<JobSuccess> future = command.doExecute(null, 1L);
-    assertTrue(future.get().isCompletedWithoutError());
+    TestCase.assertTrue(future.get().isCompletedWithoutError());
+    
+    final ArgumentCaptor<PublishRequest> publishRequestArgumentCaptor =
+        ArgumentCaptor.forClass(PublishRequest.class);
+    verify(snsClient).publish(publishRequestArgumentCaptor.capture());
+  
+    assertEquals(TOPIC_ARN, publishRequestArgumentCaptor.getValue().topicArn());
+    assertEquals("{\"id\":\"Test\"}", publishRequestArgumentCaptor.getValue().message());
   }
-
+  
   @Test
   public void doExecutePublishesStringMessage() throws Exception {
     final SNSJobCommand<String, MockJobCommandExecutionContext> command =
         createCommand("Test message");
-
+    
     final Future<JobSuccess> future = command.doExecute(null, 1L);
     assertTrue(future.get().isCompletedWithoutError());
   }
@@ -106,23 +124,7 @@ public class SNSJobCommandTest {
       }
     };
   }
-
-  private void expectMessage(String expectedMessage) {
-    new Expectations() {
-      {
-        snsClient.publish((PublishRequest) any);
-        result = new Delegate() {
-          PublishResponse publish(PublishRequest publishRequest) {
-            assertEquals(TOPIC_ARN, publishRequest.topicArn());
-            assertEquals(expectedMessage, publishRequest.message());
-
-            return PublishResponse.builder().build();
-          }
-        };
-      }
-    };
-  }
-
+  
   /**
    * Test message
    *
@@ -131,5 +133,5 @@ public class SNSJobCommandTest {
   private static class Message implements Serializable {
     private final String id = "Test";
   }
-
+  
 }
