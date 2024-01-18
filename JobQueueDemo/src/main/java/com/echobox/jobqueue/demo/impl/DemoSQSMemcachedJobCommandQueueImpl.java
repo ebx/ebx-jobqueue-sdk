@@ -17,7 +17,6 @@
 
 package com.echobox.jobqueue.demo.impl;
 
-import com.amazonaws.services.sqs.AmazonSQS;
 import com.echobox.cache.impl.MemcachedCacheService;
 import com.echobox.jobqueue.PersistentJobCommandOnQueue;
 import com.echobox.jobqueue.QueuedJobId;
@@ -30,6 +29,7 @@ import com.echobox.jobqueue.demo.domain.bindings.DemoQueuedJobId;
 import com.echobox.jobqueue.sqscache.SQSCacheJobCommandQueueBase;
 import com.google.gson.reflect.TypeToken;
 import org.bson.types.ObjectId;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 import java.util.Map;
 
@@ -52,13 +52,13 @@ public class DemoSQSMemcachedJobCommandQueueImpl extends SQSCacheJobCommandQueue
  
   /**
    * Initialise DemoSQSMemcachedJobCommandQueueImpl
-   * @param sqs The SQS Instance
-   * @param queueUrlsByQueueType 
+   * @param sqsClient The SQS client
+   * @param queueUrlsByQueueType map of queue types to their queue URL
    */
-  public DemoSQSMemcachedJobCommandQueueImpl(AmazonSQS sqs, 
+  public DemoSQSMemcachedJobCommandQueueImpl(SqsClient sqsClient,
       Map<DemoQueueType, String> queueUrlsByQueueType) {
-    super(sqs, MemcachedCacheService.getInstance(), 
-        "DemoSQSMemcachedJobCommandQueueImpl", MAXIMUM_NUMBER_OF_SECONDS_PERMITTED_ON_QUEUE);
+    super(sqsClient, MemcachedCacheService.getInstance(), "DemoSQSMemcachedJobCommandQueueImpl",
+        MAXIMUM_NUMBER_OF_SECONDS_PERMITTED_ON_QUEUE);
     this.queueUrlsByQueueType = queueUrlsByQueueType;
   }
 
