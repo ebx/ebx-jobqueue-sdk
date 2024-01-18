@@ -7,7 +7,7 @@
 
     <groupId>com.echobox</groupId>
     <artifactId>ebx-jobqueue-sdk-parent</artifactId>
-    <version>3.2.1</version>
+    <version>3.2.2</version>
     <packaging>pom</packaging>
 
     <description>A library which allows Java command execution to be distributed from producers to consumers on multiple machines via a persistent queue.</description>
