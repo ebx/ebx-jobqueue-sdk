@@ -17,9 +17,6 @@
 
 package com.echobox.jobqueue.commands;
 
-import com.amazonaws.services.sns.AmazonSNSAsync;
-import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
 import com.echobox.jobqueue.JobType;
 import com.echobox.jobqueue.commands.behaviour.JobCommandInterruptionStrategy;
 import com.echobox.jobqueue.context.JobCommandExecutionContext;
@@ -32,6 +29,9 @@ import com.google.gson.Gson;
 import org.apache.commons.lang3.concurrent.ConcurrentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.sns.SnsAsyncClient;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 import java.io.Serializable;
 import java.util.concurrent.Future;
@@ -62,7 +62,7 @@ public abstract class SNSJobCommand<M extends Serializable,
   /**
    * The AWS SNS async client instance
    */
-  protected final AmazonSNSAsync snsClient;
+  protected final SnsAsyncClient snsClient;
   
   /**
    * The SNS topic ARN to use
@@ -82,7 +82,7 @@ public abstract class SNSJobCommand<M extends Serializable,
    * @param jobCreationTimeUnix the job creation time unix   
    * @param topicArn the topic ARN
    */
-  public SNSJobCommand(JobType<?> jobCommandType, AmazonSNSAsync snsClient,
+  public SNSJobCommand(JobType<?> jobCommandType, SnsAsyncClient snsClient,
       long jobCreationTimeUnix, String topicArn) {
     super(jobCommandType, jobCreationTimeUnix);
     this.topicArn = topicArn;
@@ -100,9 +100,9 @@ public abstract class SNSJobCommand<M extends Serializable,
 
   /**
    * Process the result of sending the message
-   * @param result publish result
+   * @param response publish result
    */
-  protected abstract void processResult(PublishResult result);
+  protected abstract void processResult(PublishResponse response);
 
   @Override
   protected boolean isAsynchronousExecution() {
@@ -123,9 +123,13 @@ public abstract class SNSJobCommand<M extends Serializable,
       }
 
       final PublishRequest publishReq =
-          new PublishRequest().withTopicArn(topicArn).withMessage(messageStr);
+          PublishRequest
+              .builder()
+              .topicArn(topicArn)
+              .message(messageStr)
+              .build();
 
-      final PublishResult result = snsClient.publish(publishReq);
+      final PublishResponse result = snsClient.publish(publishReq).get();
       processResult(result);
 
       this.messageSent = true;

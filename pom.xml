@@ -66,6 +66,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <!-- Define the management of certain plugins in child poms -->
@@ -157,10 +163,6 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.version}</version>
                     <configuration>
-                        <argLine>
-                            -Dfile.encoding=UTF-8
-                            -javaagent:${settings.localRepository}/org/jmockit/jmockit/1.38/jmockit-1.38.jar
-                        </argLine>
                         <excludes>
                             <exclude>**/*IT.java</exclude>
                             <exclude>**/*ITest.java</exclude>
