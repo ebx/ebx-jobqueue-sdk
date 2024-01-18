@@ -152,7 +152,7 @@
         <dependency>
           <groupId>com.echobox</groupId>
           <artifactId>ebx-cachebase-sdk</artifactId>
-          <version>1.1.1</version>
+          <version>1.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
