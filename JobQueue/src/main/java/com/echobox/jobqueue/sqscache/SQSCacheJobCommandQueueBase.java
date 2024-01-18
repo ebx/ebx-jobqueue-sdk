@@ -17,10 +17,6 @@
 
 package com.echobox.jobqueue.sqscache;
 
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.echobox.cache.CacheService;
 import com.echobox.jobqueue.PersistentJobCommandOnQueue;
 import com.echobox.jobqueue.PersistentJobCommandQueue;
@@ -32,6 +28,10 @@ import com.google.gson.reflect.TypeToken;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -55,16 +55,16 @@ public abstract class SQSCacheJobCommandQueueBase<C
   /**
    * A logging instance for this class
    */
-  private static Logger logger = LoggerFactory.getLogger(SQSCacheJobCommandQueueBase.class);
+  private static final Logger logger = LoggerFactory.getLogger(SQSCacheJobCommandQueueBase.class);
 
+  private final SqsClient sqsClient;
   private final CacheService cacheService;
-  private final AmazonSQS sqs;
   private final String cacheKeyPrefix;
   private final int cacheExpiryTimeSeconds;
 
   /**
    * The constructor
-   * @param sqs The SQS client
+   * @param sqsClient The SQS client
    * @param cacheService The cache service
    * @param cacheKeyPrefix The prefix we use for keys in the cache
    * @param cacheExpiryTimeSeconds The number of seconds that the persistent job commands stored
@@ -73,10 +73,10 @@ public abstract class SQSCacheJobCommandQueueBase<C
    * on the consumer will extend the lifetime of the persistent job by cacheExpiryTimeSeconds
    * every heartbeat after consumption. 
    */
-  public SQSCacheJobCommandQueueBase(AmazonSQS sqs, CacheService cacheService, 
+  public SQSCacheJobCommandQueueBase(SqsClient sqsClient, CacheService cacheService,
       String cacheKeyPrefix, int cacheExpiryTimeSeconds) {
+    this.sqsClient = sqsClient;
     this.cacheService = cacheService;
-    this.sqs = sqs;
     this.cacheKeyPrefix = cacheKeyPrefix;
     this.cacheExpiryTimeSeconds = cacheExpiryTimeSeconds;
   }
@@ -132,12 +132,14 @@ public abstract class SQSCacheJobCommandQueueBase<C
    */
   protected void addToQueue(QueuedJobId<Q, I> queuedJobId) {
 
-    SendMessageRequest sendMessageRequest = new SendMessageRequest()
-        .withQueueUrl(getSQSQueueUrl(queuedJobId.getQueueType()))
-        .withMessageBody(createMessageBodyFromJobId(queuedJobId.getJobId()))
-        .withDelaySeconds(5);
+    SendMessageRequest sendMessageRequest = SendMessageRequest
+        .builder()
+        .queueUrl(getSQSQueueUrl(queuedJobId.getQueueType()))
+        .messageBody(createMessageBodyFromJobId(queuedJobId.getJobId()))
+        .delaySeconds(5)
+        .build();
     
-    sqs.sendMessage(sendMessageRequest);
+    sqsClient.sendMessage(sendMessageRequest);
     
   }
 
@@ -236,10 +238,12 @@ public abstract class SQSCacheJobCommandQueueBase<C
    */
   private I pollQueue(Q queueType) {
    
-    ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest()
-        .withQueueUrl(getSQSQueueUrl(queueType))
-        .withMaxNumberOfMessages(1);
-    List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
+    ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest
+        .builder()
+        .queueUrl(getSQSQueueUrl(queueType))
+        .maxNumberOfMessages(1)
+        .build();
+    List<Message> messages = sqsClient.receiveMessage(receiveMessageRequest).messages();
     
     if (messages.isEmpty()) {
       return null;
@@ -247,7 +251,7 @@ public abstract class SQSCacheJobCommandQueueBase<C
       throw new IllegalStateException("Multiple messages retreived from SQS");
     } else {
       Message message = messages.get(0);
-      return getJobIdFromMessageBody(message.getBody());
+      return getJobIdFromMessageBody(message.body());
     }
   }
   
